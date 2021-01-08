@@ -31,12 +31,32 @@ const navBar = document.querySelector("nav");
 function getSections() {
   return document.getElementsByTagName("section");
 }
-const newListItem = (section) => {
+const newNavLink = (section) => {
   const listItem = document.createElement("li");
   listItem.classList.add("menu__link");
   listItem.textContent = section.getAttribute("data-nav");
   listItem.section = section;
+  section.navLink = listItem;
   return listItem;
+};
+const getCurrSection = () => {
+  let sectionNum =
+    (window.innerHeight + scrollY - navBar.getBoundingClientRect().height) /
+    (1.15 * sections[0].offsetHeight);
+  sectionNum = Math.floor(sectionNum) - 1;
+  return sectionNum < 0 || sectionNum > sectionsNum - 1
+    ? null
+    : { sectionNumber: sectionNum, section: sections[sectionNum] };
+};
+const setActive = (currSection) => {
+  const { section, sectionNumber } = currSection;
+  console.log(sectionNumber);
+  section.classList.add("your-active-class");
+  section.navLink.classList.add("active-link");
+  if (sectionNumber >= 1) {
+    sections[sectionNumber - 1].classList.remove("your-active-class");
+    sections[sectionNumber - 1].navLink.classList.remove("active-link");
+  }
 };
 
 /**
@@ -49,7 +69,7 @@ const newListItem = (section) => {
 let navBarList = new DocumentFragment();
 for (let i = 0; i < sectionsNum; i++) {
   const itemName = sections[i];
-  navBarList.appendChild(newListItem(itemName));
+  navBarList.appendChild(newNavLink(itemName));
 }
 navBar.appendChild(navBarList);
 
@@ -70,8 +90,12 @@ navBarList = document.querySelectorAll(".menu__link");
 for (let i = 0; i < navBarList.length; i++) {
   let listItem = navBarList[i];
   listItem.addEventListener("click", () => {
-    listItem.section.scrollIntoView({});
+    listItem.section.scrollIntoView({ behavior: "smooth" });
   });
 }
 
 // Set sections as active
+document.addEventListener("scroll", (event) => {
+  let currSection = getCurrSection();
+  if (currSection != null) setActive(currSection);
+});
